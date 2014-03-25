@@ -1,4 +1,4 @@
-Enter file contents herefunction InitEnemy(enemy) {
+function InitEnemy(enemy) {
 
   enemy.x += 10;
   enemy.y += 10;
