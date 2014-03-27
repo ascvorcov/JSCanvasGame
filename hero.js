@@ -6,14 +6,12 @@ function InitHero(hero) {
   hero.offsety = 70;
   hero.lives = 3;
   hero.score = 0;
+  hero.heading = "r";
   hero.knockback = 0;
+  hero.recoil = 0;
 
   var tileRender = hero.render;
   hero.render = function(ctx) {
-    if (hero.knockback > 0)
-    {
-      hero.knockback--;
-    }
 
     ctx.globalAlpha = hero.getAlpha();
     tileRender(ctx);
@@ -32,16 +30,28 @@ function InitHero(hero) {
   }
 
   hero.fire = function() {
-    InitStar(hero, scene);
-    return true;
+    if (hero.recoil <= 0) {
+      hero.recoil = 100;
+      InitStar(hero, scene);
+      return true;
+    }
+
+    return false;
   }
 
   hero.event = function(name, modifier) {
-    if (name == "") return false;
+    if (name == "") {
+      if (hero.recoil    > 0) hero.recoil--; //process stats on idle event
+      if (hero.knockback > 0) hero.knockback--;
+      return false;
+    }
   
     var px = this.x;
     var py = this.y;
     
+    if ("udlr".indexOf(name) >= 0) 
+      hero.heading = name;
+
     var d = Math.ceil(this.speed * modifier);
     if /**/ (name == "u") py -= d;
     else if (name == "d") py += d;

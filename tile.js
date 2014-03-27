@@ -178,7 +178,8 @@ function Scene(sizex, sizey, tilew, tileh) {
       /* projectile hit */
       var star = res[0];
       var obj = res[1];
-      if (obj.type != TileType.Player && obj.type != TileType.Loot) {
+
+      if (obj.type == TileType.Wall || obj.type == TileType.NPC) {
         scene.actors.splice(scene.actors.indexOf(star), 1);
         return false; // projectile hit and removed - no reason to check further.
       }

@@ -7,6 +7,7 @@ function InitStar(hero, scene) {
   star.height = 40;
   star.offsetx = 30;
   star.offsety = 75;
+  star.heading = hero.heading;
   
   /*var tileRender = hero.render;
   hero.render = function(ctx) {
@@ -24,7 +25,11 @@ function InitStar(hero, scene) {
     var py = this.y;
     
     var d = Math.ceil(this.speed * modifier);
-    px += d;
+    name = star.heading;
+    if /**/ (name == "u") py -= d;
+    else if (name == "d") py += d;
+    else if (name == "l") px -= d;
+    else if (name == "r") px += d;
 
     if (this.canMove(px, py)) {
       this.x = px;

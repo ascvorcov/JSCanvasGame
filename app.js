@@ -10,7 +10,9 @@ pool.add("hero", "images/Character Boy.png");
 pool.add("enemy", "images/Enemy Bug.png", 0.7);
 pool.add("block", "images/Stone Block Tall.png");
 pool.add("grass", "images/Dirt Block.png");
-pool.add("prize", "images/Gem Orange.png", 0.4);
+pool.add("prize1", "images/Gem Blue.png", 0.4);
+pool.add("prize2", "images/Gem Green.png", 0.4);
+pool.add("prize3", "images/Gem Orange.png", 0.4);
 pool.add("heart", "images/Heart.png", 0.5);
 pool.add("star", "images/Star.png", 0.5);
 
