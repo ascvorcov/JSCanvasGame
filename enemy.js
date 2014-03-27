@@ -7,7 +7,15 @@ function InitEnemy(enemy) {
   enemy.offsetx = 15;
   enemy.offsety = 70;
   enemy.speed = 90;
-  
+  enemy.hp = 100;
+  enemy.dead = false;
+
+  enemy.getAlpha = function() {
+    if (!enemy.dead) return 1;
+
+    return enemy.hp / 100.0;
+  }
+
   enemy.getOffset = function(dir, modifier) {
     
     var d = Math.ceil(this.speed * modifier);
@@ -36,9 +44,20 @@ function InitEnemy(enemy) {
     return d;
   }
 
-  enemy.event = function(name, modifier) {
+  enemy.hit = function(projectile) {
+    enemy.dead = true;
+  }
 
-    if (name != "") return false; // skip non-idle cycles
+  enemy.event = function(name, modifier) {
+    if (name != "") {
+      return false; // skip non-idle cycles
+    }
+
+    if (enemy.dead) {
+      if(enemy.hp > 0) enemy.hp--;
+      if(enemy.hp <= 0) enemy.destroyed = true;
+      return false;
+    }
 
     var px = this.x;
     var py = this.y;

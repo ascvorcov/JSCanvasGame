@@ -10,18 +10,10 @@ function InitHero(hero) {
   hero.knockback = 0;
   hero.recoil = 0;
 
-  var tileRender = hero.render;
-  hero.render = function(ctx) {
-
-    ctx.globalAlpha = hero.getAlpha();
-    tileRender(ctx);
-    ctx.globalAlpha = 1;
-
-    /*ctx.beginPath();
-    ctx.strokeStyle="red";
-    ctx.rect(hero.x,hero.y,hero.width,hero.height);
-    ctx.stroke();*/
-  }
+  /*ctx.beginPath();
+  ctx.strokeStyle="red";
+  ctx.rect(hero.x,hero.y,hero.width,hero.height);
+  ctx.stroke();*/
 
   hero.getAlpha = function() {
     if (hero.knockback <= 0) return 1;

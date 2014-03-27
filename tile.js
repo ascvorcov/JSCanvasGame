@@ -51,41 +51,47 @@ function Resource(url, scale) {
 }
 
 function Tile(res, speed, x, y, w, h, type) {
-   var tile = {}
-   tile.res = res;
-   tile.x = x;
-   tile.y = y;
-   tile.width = w;
-   tile.height = h;
-   tile.offsetx = 0;
-   tile.offsety = 50;
-   tile.speed = speed;
-   tile.type = type;
-   tile.render = function (ctx) {                                                                         
-     if (tile.res.ready) {
-       tile.res.render(ctx, tile.x - tile.offsetx, tile.y - tile.offsety);
-     }
-   }
+  var tile = {}
+  tile.res = res;
+  tile.x = x;
+  tile.y = y;
+  tile.width = w;
+  tile.height = h;
+  tile.offsetx = 0;
+  tile.offsety = 50;
+  tile.speed = speed;
+  tile.type = type;
+  tile.render = function (ctx) {                                                                         
+    if (tile.res.ready) {
+      ctx.globalAlpha = tile.getAlpha();
+      tile.res.render(ctx, tile.x - tile.offsetx, tile.y - tile.offsety);
+      ctx.globalAlpha = 1;
+    }
+  }
 
-   tile.order = function () {
-     if (tile.type == TileType.NPC || tile.type == TileType.Player || tile.type == TileType.Projectile)
-       return (tile.y + tile.height)*1000;
-     return (tile.y*1000) + tile.type;
-   }
+  tile.order = function () {
+    if (tile.type == TileType.NPC || tile.type == TileType.Player || tile.type == TileType.Projectile)
+      return (tile.y + tile.height)*1000;
+    return (tile.y*1000) + tile.type;
+  }
 
-   tile.event = function(name, modifier) {
-     return false;
-   }
+  tile.event = function(name, modifier) {
+    return false;
+  }
 
-   tile.rect = function() {
-     return new Rectangle(tile.x, tile.y, tile.width, tile.height);
-   }
-   
+  tile.rect = function() {
+    return new Rectangle(tile.x, tile.y, tile.width, tile.height);
+  }
+  
   tile.canMove = function(px, py) {
     var rect = tile.rect();
     rect.left = px;
     rect.top = py;
     return scene.canMove(tile, rect);
+  }
+
+  tile.getAlpha = function() {
+    return 1;
   }
 
   return tile;   
@@ -106,6 +112,8 @@ function HeadUpDisplay(pool, hero) {
     gradient.addColorStop("1.0","red");
     ctx.fillStyle=gradient;
     ctx.fillText(h.hero.score + "",350,40);
+    if (h.message != undefined)
+      ctx.fillText(h.message, 350, 300);
   }
   
   return h;
@@ -142,11 +150,19 @@ function Scene(sizex, sizey, tilew, tileh) {
     return null;
   }
 
+  s.freeze = function(message) {
+    s.frozen = true;
+    s.hud.message = message;
+  }
+
   s.event = function(name, modifier) {
+    if (s.frozen) return;
+
     var changed = false;
     for (var x in s.actors) {
       var actor = s.actors[x];
       changed |= actor.event(name, modifier);
+      if (actor.destroyed) scene.actors.splice(x, 1);
     }
 
     if (changed) {
@@ -180,7 +196,12 @@ function Scene(sizex, sizey, tilew, tileh) {
       var obj = res[1];
 
       if (obj.type == TileType.Wall || obj.type == TileType.NPC) {
-        scene.actors.splice(scene.actors.indexOf(star), 1);
+        star.destroyed = true;
+        if (obj.type == TileType.NPC) {
+          /* enemy hit */
+          obj.hit(star);
+          s.hero().score += 100;
+        }
         return false; // projectile hit and removed - no reason to check further.
       }
     }
@@ -193,13 +214,14 @@ function Scene(sizex, sizey, tilew, tileh) {
       
       if/* */(obj.type == TileType.Loot) {
         player.score += obj.worth;
-        scene.actors.splice(scene.actors.indexOf(obj), 1);
+        obj.destroyed = true;
         return false; //loot is removed - no reason to check further, cannot move.
       }
       else if (obj.type == TileType.NPC) {
         if (player.knockback == 0) {
           player.lives--;
           player.knockback = 100;
+          if (player.lives == 0) player.destroyed = true;
         }
       }
     }
@@ -213,9 +235,15 @@ function Scene(sizex, sizey, tilew, tileh) {
 
     return !unpassable;
   }
-
-  s.check = function(lt,rt, t1, t2)
-  {
+  
+  s.hasAny = function(type) {
+    for(var x in s.actors)
+      if (s.actors[x].type == type)
+        return true;
+    return false;
+  }
+  
+  s.check = function(lt,rt, t1, t2) {
     return (lt == t1 && rt == t2) || (lt == t2 && rt == t1);
   }
   
